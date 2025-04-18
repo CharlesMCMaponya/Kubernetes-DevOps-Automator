@@ -1,55 +1,52 @@
-import argparse
-from kubernetes import client, config
+from kubernetes import client, config, utils
+import sys
+
+# Load kube config
+config.load_kube_config()
+
+# Create API clients
+api_instance = client.AppsV1Api()
+core_api = client.CoreV1Api()
+
+# Delete existing my-nginx-deployment if it exists
+try:
+    api_instance.delete_namespaced_deployment(name="my-nginx-deployment", namespace="default")
+    print("Existing my-nginx-deployment deleted")
+except:
+    pass
+
+# Delete existing nginx-deployment if it exists (cleanup for old resources)
+try:
+    api_instance.delete_namespaced_deployment(name="nginx-deployment", namespace="default")
+    print("Existing nginx-deployment deleted")
+except:
+    pass
+
+# Delete existing service if it exists
+try:
+    core_api.delete_namespaced_service(name="nginx-service", namespace="default")
+    print("Existing nginx-service deleted")
+except:
+    pass
+
+# Create deployment
+try:
+    utils.create_from_yaml(client.ApiClient(), "nginx-deployment.yaml", namespace="default")
+    print("My Nginx deployment created!")
+except Exception as e:
+    print(f"Failed to create deployment: {str(e)}")
+    sys.exit(1)
+
+# Create service
+try:
+    utils.create_from_yaml(client.ApiClient(), "nginx-service.yaml", namespace="default")
+    print("My Nginx service created!")
+except Exception as e:
+    print(f"Failed to create service: {str(e)}")
+    sys.exit(1)
 
 def deploy():
-    config.load_kube_config()
-    try:
-        with open("nginx-deployment.yaml") as f:
-            dep = client.V1Deployment.from_yaml(f)
-        api = client.AppsV1Api()
-        api.create_namespaced_deployment(namespace="default", body=dep)
-        print("Nginx deployment created!")
-    except FileNotFoundError:
-        print("Error: nginx-deployment.yaml not found!")
-        return
-    try:
-        with open("nginx-service.yaml") as f:
-            svc = client.V1Service.from_yaml(f)
-        api = client.CoreV1Api()
-        api.create_namespaced_service(namespace="default", body=svc)
-        print("Nginx service created!")
-    except FileNotFoundError:
-        print("Error: nginx-service.yaml not found!")
-        return
-
-def delete():
-    config.load_kube_config()
-    api = client.CoreV1Api()
-    try:
-        api.delete_namespaced_service(name="nginx-service", namespace="default")
-        print("Nginx service deleted!")
-    except client.ApiException as e:
-        if e.status != 404:
-            raise
-        print("Nginx service already deleted!")
-    api = client.AppsV1Api()
-    try:
-        api.delete_namespaced_deployment(name="nginx-deployment", namespace="default")
-        print("Nginx deployment deleted!")
-    except client.ApiException as e:
-        if e.status != 404:
-            raise
-        print("Nginx deployment already deleted!")
-
-def main():
-    parser = argparse.ArgumentParser(description="Kubernetes Automation Tool")
-    parser.add_argument("command", choices=["deploy", "delete"], help="Command to run")
-    args = parser.parse_args()
-
-    if args.command == "deploy":
-        deploy()
-    elif args.command == "delete":
-        delete()
+    print("Deploying My Nginx application...")
 
 if __name__ == "__main__":
-    main()
+    deploy()

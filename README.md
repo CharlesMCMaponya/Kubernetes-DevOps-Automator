@@ -1,5 +1,11 @@
-# Kubernetes Automation Tool
-Automates Kubernetes deployments, scaling, and monitoring for DevOps workflows.
+## Automates Kubernetes deployments, scaling, and monitoring for DevOps workflows.
+
+## Technologies Used
+- **Python**: For automation scripts (e.g., `deploy.py`).
+- **Bash**: For workflow automation (e.g., `deploy.sh`).
+- **YAML**: For Kubernetes configurations (e.g., `nginx-deployment.yaml`).
+- **Linux**: For hosting and managing the Kubernetes environment (via WSL2 and Minikube).
+
 
 ## Setup
 - Start Minikube: `minikube start --driver=docker`
@@ -19,3 +25,9 @@ Automates Kubernetes deployments, scaling, and monitoring for DevOps workflows.
 ## Notes
 - WSL2 users may need to use `minikube service` due to networking limitations with Minikube’s Docker driver.
 - Ensure `minikube` and `kubectl` are installed.
+## Results
+### Nginx Service Access
+After exposing the Nginx service using `minikube service nginx-service -n default`, the service was accessible at `http://127.0.0.1:43985`, displaying the "Welcome to nginx!" page.
+
+### Pod Status After Scaling
+Scaled down to 1 replica using `kubectl scale deployment my-nginx-deployment --replicas=1`. Verified with `kubectl get pods -n default`:
